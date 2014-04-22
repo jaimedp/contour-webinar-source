@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" href="css/contour.min.css">
+        <script src="js/vendor/d3/d3.min.js" charset="utf-8"></script>
+        <script src="js/vendor/lodash/lodash.js"></script>
+        <script src="js/vendor/contour/contour.min.js"></script>
+        <script src="js/vendor/contour/contour.connectors.min.js"></script>
+
+        <script src="js/data-2.js"></script>
+
+        <style>
+            .chart {
+                width: 600px;
+                margin: 0 auto;
+            }
+
+            .chart-title {
+                text-align: center;
+                font-size: 32px;
+                margin-bottom: .5em;
+            }
+
+            .contour-chart .axis {
+                stroke: none;
+            }
+
+            .contour-chart .tick line {
+                stroke: #ddd;
+            }
+
+            .contour-legend {
+                border: none;
+                text-transform: capitalize;
+                margin-top: -1.5em;
+            }
+
+            .contour-legend .contour-legend-key {
+                height: 3px;
+                width: 20px;
+                margin-bottom: .2em
+            }
+
+            .event-marker line {
+                stroke: #999;
+                stroke-dasharray: 5,5;
+            }
+
+            .event-marker text {
+                -webkit-font-smoothing: antialiased;
+                stroke: none;
+                fill: #999;
+                font-family: arial;
+                font-size: 14px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="chart-title">Historical Housing Prices</div>
+        <div class="chart"></div>
+
+        <script>
+
+            var historicalEvents = {
+                events: [
+                    { name: '9-11 Attacks', date: '09/11/2001' },
+                    { name: 'Iraq War Begins', date: '3/19/2003' },
+                    { name: 'Huracan Katrina', date: '8/29/2005' },
+                    { name: 'Fredie Mac & Fannie Mea', date: '9/8/2008' },
+                    { name: 'TARP Announced', date: '10/14/2009' },
+                    { name: 'Bin Laden Killed', date: '5/2/2011' }
+                ]
+            }
+
+            // custom component eventMarker
+            Contour.export('eventMarker', function (data, layer, options) {
+                var _this = this;
+                var x = function (d) { return _this.xScale(new Date(d.date)); }
+                var events = layer.selectAll('.event-marker').data(data.events);
+
+                var eventGroup = events.enter()
+                    .append('g')
+                    .attr('class', 'event-marker');
+
+                eventGroup.append('line')
+                    .attr('y1', 0)
+                    .attr('y2', options.chart.plotHeight)
+                    .attr('x1', x)
+                    .attr('x2', x);
+
+                eventGroup.append('text')
+                    .attr('x', x)
+                    .attr('y', 0)
+                    .attr('dy', -5)
+                    .attr('text-anchor', 'end')
+                    .attr('transform', function (d) { return 'rotate(-90 ' + x(d) + ', 0)'; })
+                    .text(function (d) { return d.name; })
+            });
+
+            var dataSet = new Contour.connectors.Csv(housingData);
+            var data = dataSet.measure(['USA', 'Pacific']);
+
+            new Contour({
+                el: '.chart',
+
+                xAxis: {
+                    maxTicks: 10
+                },
+
+                yAxis: {
+                    title: 'Purchase-Only Index',
+                    titlePadding: 15,
+                    min: 80
+                },
+
+                line: {
+                    marker: {
+                        enable: false
+                    }
+                },
+
+                legend: {
+                    vAlign: 'top',
+                    hAlgin: 'right',
+                    direction: 'horizontal'
+                }
+
+            })
+            .cartesian()
+            .line(data)
+            .legend()
+            .tooltip()
+            .eventMarker(historicalEvents)
+            .render();
+
+        </script>
+    </body>
+</html>
