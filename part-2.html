@@ -1,66 +1,57 @@
 <!doctype html>
 <html>
-    <head>
-        <link rel="stylesheet" href="css/contour.min.css">
-        <script src="js/vendor/d3/d3.min.js" charset="utf-8"></script>
-        <script src="js/vendor/lodash/lodash.js"></script>
-        <script src="js/vendor/contour/contour.min.js"></script>
-        <script src="js/vendor/contour/contour.connectors.min.js"></script>
+<head>
+    <link rel="stylesheet" href="css/contour.min.css">
 
-        <script src="js/data-2.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="js/vendor/d3/d3.min.js" charset="utf-8"></script>
+    <script src="js/vendor/lodash/lodash.js"></script>
 
-        <style>
-            .chart {
-                width: 600px;
-                margin: 0 auto;
-            }
+    <script src="js/vendor/contour/contour.min.js"></script>
+    <script src="js/vendor/contour/contour.connectors.js"></script>
 
-            .chart-title {
-                text-align: center;
-                font-size: 32px;
-                margin-bottom: .5em;
-            }
+    <script src="js/google-doc.js"></script>
+    <style>
 
-            .contour-chart .axis {
-                stroke: none;
-            }
+        .chart-title {
+            text-align: center;
+        }
 
-            .contour-chart .tick line {
-                stroke: #ddd;
-            }
+        .chart {
+            width: 600px;
+            margin: 0 auto;
+        }
 
-            .contour-legend {
-                border: none;
-                text-transform: capitalize;
-                margin-top: -1.5em;
-            }
+        .x.axis, .y.axis {
+            stroke: none;
+        }
 
-            .contour-legend .contour-legend-key {
-                height: 3px;
-                width: 20px;
-                margin-bottom: .2em
-            }
+        .marker line {
+            stroke: #ddd;
+            stroke-dasharray: 5, 5;
+        }
 
-            .event-marker line {
-                stroke: #999;
-                stroke-dasharray: 5,5;
-            }
+        .marker text {
+            text-anchor: end;
+        }
 
-            .event-marker text {
-                -webkit-font-smoothing: antialiased;
-                stroke: none;
-                fill: #999;
-                font-family: arial;
-                font-size: 14px;
-            }
+        .contour-legend {
+            border: none;
+            margin-top: -20px;
+        }
 
-        </style>
-    </head>
-    <body>
-        <div class="chart-title">Historical Housing Prices</div>
-        <div class="chart"></div>
+    </style>
+</head>
+<body>
 
-        <script>
+    <h2 class="chart-title">Historical Housing Prices</h2>
+    <div class="chart"></div>
+
+    <script>
+
+        gDoc.csv('1YxqnKvTxVDLGR9Drh0hwXxWED7Qrj0mx75bKQcANltk', function (data) {
+
+            var csv = new Contour.connectors.Csv(data);
 
             var historicalEvents = {
                 events: [
@@ -73,44 +64,41 @@
                 ]
             }
 
-            // custom component eventMarker
-            Contour.export('eventMarker', function (data, layer, options) {
+            Contour.export('marker', function (data, layer, options) {
+
+                var events = data.events;
                 var _this = this;
-                var x = function (d) { return _this.xScale(new Date(d.date)); }
-                var events = layer.selectAll('.event-marker').data(data.events);
+                var height = options.chart.plotHeight;
+                var x = function (d) { return _this.xScale(new Date(d.date)); };
 
-                var eventGroup = events.enter()
-                    .append('g')
-                    .attr('class', 'event-marker');
+                var g = layer.selectAll('.marker').data(events)
+                    .enter().append('g').attr('class', 'marker')
 
-                eventGroup.append('line')
-                    .attr('y1', 0)
-                    .attr('y2', options.chart.plotHeight)
-                    .attr('x1', x)
-                    .attr('x2', x);
+                g.append('line')
+                    .attr('x1', x )
+                    .attr('x2', x )
+                    .attr('y1', 0 )
+                    .attr('y2', height);
 
-                eventGroup.append('text')
+                g.append('text')
                     .attr('x', x)
                     .attr('y', 0)
-                    .attr('dy', -5)
-                    .attr('text-anchor', 'end')
-                    .attr('transform', function (d) { return 'rotate(-90 ' + x(d) + ', 0)'; })
-                    .text(function (d) { return d.name; })
+                    .attr('transform', function (d) { return 'rotate(-90 ' + x(d) + ',0)'} )
+                    .text(function(d) { return d.name; } );
             });
-
-            var dataSet = new Contour.connectors.Csv(housingData);
-            var data = dataSet.measure(['USA', 'Pacific']);
 
             new Contour({
                 el: '.chart',
 
                 xAxis: {
-                    maxTicks: 10
+                    maxTicks: 6,
+                    innerTickSize: 0,
+                    outerTickSize: 0,
                 },
 
                 yAxis: {
-                    title: 'Purchase-Only Index',
-                    titlePadding: 15,
+                    innerTickSize: 0,
+                    outerTickSize: 0,
                     min: 80
                 },
 
@@ -121,19 +109,18 @@
                 },
 
                 legend: {
-                    vAlign: 'top',
-                    hAlgin: 'right',
-                    direction: 'horizontal'
+                    direction: 'horizontal',
+                    vAlign: 'top'
                 }
-
             })
             .cartesian()
-            .line(data)
+            .line(csv.measure(['USA', 'Pacific', 'Mountain']))
             .legend()
-            .tooltip()
-            .eventMarker(historicalEvents)
+            .marker(historicalEvents)
             .render();
 
-        </script>
-    </body>
+        });
+
+    </script>
+</body>
 </html>

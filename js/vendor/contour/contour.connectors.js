@@ -71,6 +71,15 @@
         initialize: function () {
         },
 
+        fetch: function (url, callback) {
+            var _this = this;
+
+            return d3.text(url, function (data) {
+                _this.parse(data);
+                if (callback) callback.call(_this, data);
+            });
+        },
+
         /**
         * Returns the list of all posible dimensions for the data set. Dimensions are any non-numeric data.
         *
@@ -90,7 +99,7 @@
             var sampleRow = this._data[1];
 
             _.each(this._headers, function (header, index) {
-                if (_.isNaN(+sampleRow[index])) {
+                if (_.isNaN(+sampleRow[index].trim())) {
                     dimensions.push(header);
                 }
 
@@ -117,7 +126,7 @@
             var sampleRow = this._data[1];
 
             _.each(this._headers, function (header, index) {
-                if (!_.isNaN(+sampleRow[index])) {
+                if (!_.isNaN(+sampleRow[index].trim())) {
                     measures.push(header);
                 }
 
@@ -130,10 +139,10 @@
         * Specifies the dimension to be used when passing this data set to a Contour visualization. Dimensions are any non-numeric data.
         *
         * ### Example:
-        *   var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
-        *   var csv = new Contour.connectors.Csv(csvData);
+        *       var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
+        *       var csv = new Contour.connectors.Csv(csvData);
         *
-        *   new Contour({
+        *       new Contour({
         *           el: '.myChart',
         *           xAxis: { title: 'Region' },
         *           yAxis: { title: 'Profit ($)' }
@@ -162,10 +171,10 @@
         *
         * ### Example:
         *
-        *   var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
-        *   var csv = new Contour.connectors.Csv(csvData);
+        *       var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
+        *       var csv = new Contour.connectors.Csv(csvData);
         *
-        *   new Contour({
+        *       new Contour({
         *           el: '.myChart',
         *           xAxis: { title: 'Quarter' },
         *           yAxis: { title: 'Profit ($)' }
@@ -232,7 +241,7 @@
 
             var reducer = function (row) {
                 _.each(row, function (entry, i) {
-                    if (!_.isNaN(+entry)) {
+                    if (i !== dimensionIndex && !_.isNaN(+entry)) {
                         var val = +entry;
                         gr[i] = (gr[i] || 0) + val;
                     } else {
@@ -255,11 +264,11 @@
         *
         * ### Example:
         *
-        *   var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
-        *   var csv = new Contour.connectors.Csv(csvData);
+        *       var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
+        *       var csv = new Contour.connectors.Csv(csvData);
         *
         *
-        *   new Contour({
+        *       new Contour({
         *           el: '.myChart',
         *           xAxis: { title: 'Region' },
         *           yAxis: { title: 'Profit ($)' }
@@ -285,10 +294,10 @@
         * Returns only the top `t` results from the sorted data set. Call this after you have specified dimensions and/or filters but before you have called `.measure()`.
         *
         * ### Example:
-        *   var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
-        *   var csv = new Contour.connectors.Csv(csvData);
+        *       var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
+        *       var csv = new Contour.connectors.Csv(csvData);
         *
-        *   new Contour({
+        *       new Contour({
         *           el: '.myChart',
         *           xAxis: { title: 'Quarter' },
         *           yAxis: { title: 'Profit ($)' }
@@ -311,10 +320,10 @@
         * Returns only the bottom `t` results from the sorted data set. Call this after you have specified dimensions and/or filters but before you have called `.measure()`.
         *
         * ### Example:
-        *   var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
-        *   var csv = new Contour.connectors.Csv(csvData);
+        *       var csvData = 'quarter,region,cost,revenue,profit\n2013Q1,North,100,150,50\n2013Q1,South,200,250,50\n2013Q2,North,110,150,40\n2013Q2,South,220,250,30\n2013Q3,North,90,180,90\n2013Q3,South,115,180,65\n2013Q4,North,105,190,85\n2013Q4,South,90,180,90';
+        *       var csv = new Contour.connectors.Csv(csvData);
         *
-        *   new Contour({
+        *       new Contour({
         *           el: '.myChart',
         *           xAxis: { title: 'Quarter' },
         *           yAxis: { title: 'Profit ($)' }
@@ -393,6 +402,27 @@
 (function () {
     'use strict';
 
+    // Return array of string values, or NULL if CSV string not well formed.
+    function CSVtoArray(text) {
+        var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
+        var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
+        // Return NULL if input string is not well formed CSV string.
+        if (!re_valid.test(text)) return null;
+        var a = [];                     // Initialize array to receive values.
+        text.replace(re_value, // "Walk" the string using replace with callback.
+            function(m0, m1, m2, m3) {
+                // Remove backslash from \' in single quoted values.
+                if      (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
+                // Remove backslash from \" in double quoted values.
+                else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
+                else if (m3 !== undefined) a.push(m3);
+                return ''; // Return empty string.
+            });
+        // Handle special case of empty last value.
+        if (/,\s*$/.test(text)) a.push('');
+        return a;
+    };
+
     /**
     * Comma Separated Values Files connector (csv)
     *
@@ -422,17 +452,66 @@
             return this;
         },
 
-        splitPatter: /,/,
+        splitPattern: /,/,
 
         parse: function (raw, headerRow) {
             this._data = [];
             this._headers = [];
             if (!raw || !raw.length) return ;
             var rows = raw.split(/\r\n|\r|\n/);
-            this._headers = headerRow ? _.map(rows.shift().split(this.splitPatter), function(d) { return d.toLowerCase().trim(); }) : _.range(0, rows[0].length);
+            this._headers = headerRow ? _.map(rows.shift().split(this.splitPattern), function(d) { return d.toLowerCase().trim(); }) : _.range(0, rows[0].length);
             _.each(rows.filter(function (row) { return row.length; }), function (r) {
-                this._data.push(r.split(this.splitPatter));
+                this._data.push(r.split(this.splitPattern));
             }, this);
+        }
+    });
+
+})();
+
+(function () {
+    'use strict';
+
+    /**
+    * JSON connector
+    *
+    * JSON data is assumed to have the following format:
+    *   { "field1": ["a", "b", "c"], "field": [1,2,3] }
+    *
+    * ### Example:
+    *
+    *       var json = '{...}';
+    *       var ds = new Contour.connectors.Json(json);
+    *
+    *       new Contour({
+    *         el: '.myChart',
+    *         xAxis: { title: 'Quarter' },
+    *         yAxis: { title: 'Profit ($)' }
+    *       })
+    *       .cartesian()
+    *       .column(ds.measure('profit'))
+    *       .render();
+    *
+    * @class Contour.connectors.Json
+    */
+    Contour.connectors.Json = Contour.connectors.ConnectorBase.extend({
+        constructor: function (json) {
+            this._dimension = 0;
+            this.parse(json);
+            return this;
+        },
+
+        parse: function (raw) {
+            this._headers = _.keys(raw) || [];
+            this._data = [];
+
+            for (var i=0; i<this._headers.length; i++) {
+                var keyData = raw[this._headers[i]];
+
+                for (var j=0; j<keyData.length; j++) {
+                    var row = this._data[j] || (this._data[j] = []);
+                    row.push(keyData[j]);
+                }
+            }
         }
     });
 
@@ -447,8 +526,8 @@
 	* ### Example:
     *
     *       var tsvData = 'quarter\tcost\trevenue\tprofit\n2013Q1\t100\t150\t50\n2013Q2\t110\t150\t40\n2013Q3\t90\t180\t90\n2013Q4\t105\t190\t85';
-    *       var tsv = new Contour.connectors.Tsv(tsvData);	  
-    *	
+    *       var tsv = new Contour.connectors.Tsv(tsvData);
+    *
     *       new Contour({
     *         el: '.myChart',
 	*        xAxis: { title: 'Quarter' },
@@ -461,7 +540,7 @@
     * @class Contour.connectors.Tsv
     */
     Contour.connectors.Tsv = Contour.connectors.Csv.extend({
-        splitPatter: /\t/
+        splitPattern: /\t/
     });
 
 })();

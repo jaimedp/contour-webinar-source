@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
     <link rel="stylesheet" href="css/contour.min.css">
 
     <script src="js/vendor/d3/d3.min.js" charset="utf-8"></script>
@@ -8,19 +9,23 @@
     <script src="js/vendor/contour/contour.min.js"></script>
 
     <style>
-
         .chart {
             width: 600px;
         }
 
         .s-1 .column {
-           fill: red;
-           stroke: red;
+            fill: red;
+            stroke: red;
+        }
+
+        .contour-legend {
+            border: none;
         }
 
     </style>
 </head>
 <body>
+
 
     <div class="chart"></div>
 
@@ -30,17 +35,21 @@
             el: '.chart',
 
             xAxis: {
-                categories: ['A', 'B', 'C', 'D']
+                // type: 'linear'
+            },
+
+            legend: {
+                vAlign: 'top',
+                hAlign: 'left'
             }
 
         })
         .cartesian()
-        .column([5,4,3,2])
-        .line([{
-            name: 'My series',
-            data: [2,4,6,8]
-        }])
+        .area([
+            { name: 'My Series 1', data: [2,4,6,8] }
+        ])
         .tooltip()
+        .legend()
         .render();
 
     </script>

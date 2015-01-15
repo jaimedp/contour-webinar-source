@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/contour.min.css">
+
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="js/vendor/d3/d3.min.js" charset="utf-8"></script>
+    <script src="js/vendor/lodash/lodash.js"></script>
+
+    <script src="js/vendor/contour/contour.min.js"></script>
+    <script src="js/vendor/contour/contour.connectors.js"></script>
+
+    <script src="js/google-doc.js"></script>
+    <style>
+
+        .chart {
+            width: 800px;
+        }
+
+        .series rect {
+            /*opacity: .8*/
+        }
+
+        .contour-chart .capacity {
+            fill: #ddd;
+            stroke: none;
+        }
+
+        .contour-chart .x.axis {
+            stroke: none;
+        }
+
+        .y.axis {
+            stroke: none;
+        }
+
+        .label {
+            stroke: none;
+            fill: #444;
+            text-anchor: start;
+            font-family: monospace;
+        }
+
+        .capacity .label {
+            text-anchor: start;
+            fill: #666;
+            margin-left: 100px;
+        }
+
+        .grid {
+            stroke: #ddd;
+            stroke-dasharray: 3,5;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="chart"></div>
+
+<script>
+    var docKey = '1IUwCsiFrdHl9AFh0pRagqwpOJ4ZOBkTnzvFJfkGCW6I';
+    var docUrl = 'https://docs.google.com/spreadsheets/d/1IUwCsiFrdHl9AFh0pRagqwpOJ4ZOBkTnzvFJfkGCW6I/export?gid=0&format=csv';
+
+
+    Contour.export('label', function (data, layer, options) {
+
+        x = this.xScale;
+        y = this.yScale;
+        barHeight = this.rangeBand;
+        format = d3.format(',.0');
+
+        var g = layer.selectAll('g.series').data(data)
+            .enter().append('g').attr('class', function (s) { return 'series ' + s.name; });
+
+        g.selectAll('.label').data(function(d) { return d.data; })
+            .enter().append('text')
+                .attr('class', 'label' )
+                .attr('x', function (d) { return y(d.y) + 3; })
+                .attr('y', function (d) { return x(d.x) + barHeight / 2; })
+                .attr('dy', '.31em')
+                .text(options.label.formatter || function (d) {
+                    return format(+d.y);
+                })
+    });
+
+    Contour.export('grid', function (data, layer, options) {
+        var ticks = this.yAxis().scale().ticks();
+        var x = this.xScale;
+        var y = this.yScale;
+        var height = options.chart.plotHeight;
+
+        layer.selectAll('.grid').data(ticks)
+            .enter().append('line')
+                .attr('class', 'grid')
+                .attr('x1', function (d) { return y(d); })
+                .attr('x2', function (d) { return y(d); })
+                .attr('y1', function (d) { return 0; })
+                .attr('y2', function (d) { return height; })
+    });
+
+
+    perFormat = d3.format(',.0%');
+    sFormat = d3.format('s');
+    gDoc.csv(gDoc.getPath(docKey), function (data) {
+        var csv = new Contour.connectors.Csv(data);
+
+        csv.dimension('Reservoir').top(15);
+
+        new Contour({
+            el: '.chart',
+            xAxis: {
+                innerTickSize: 0,
+                outerTickSize: 0,
+            },
+            yAxis: {
+                innerTickSize: 0,
+                outerTickSize: 0,
+                labels: {
+                    formatter: function (d) {
+                        return sFormat(d * 1000);
+                    }
+                }
+            }
+        })
+        .cartesian()
+        .horizontal()
+        .grid()
+        .bar(csv.measure('capacity'))
+        .bar(csv.measure('storage'))
+        .label(csv.measure('storage', ['curper']), { formatter: function (d) { return perFormat(+d.curper/100); }})
+        .render();
+
+
+    });
+
+
+</script>
+</body>
+</html>
